@@ -401,6 +401,14 @@ export class _ClientsidePage extends _SPQueryable {
     }
 
     /**
+     * Publishes the page without saving
+     */
+    public async publish(): Promise<boolean> {
+        let r = await spPost(ClientsidePage(this, `_api/sitepages/pages(${this.json.Id})/publish`));
+        return r;
+    }
+
+    /**
      * Discards the checkout of this page
      */
     public async discardPageCheckout(): Promise<void> {
