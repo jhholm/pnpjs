@@ -14,11 +14,11 @@ declare module "../clientside-pages/types" {
          *
          * @param languages array of language codes to create translations or leave empty if all translations should be created
          */
-        createTranslations(languages: string []): Promise<any>;
+        createTranslations(languages: string []): Promise<IClientSidePageTranslations>;
         /**
          * Gets translation information for this page
          */
-        getTranslations(): Promise<any>;
+        getTranslations(): Promise<IClientSidePageTranslations>;
     }
 }
 
