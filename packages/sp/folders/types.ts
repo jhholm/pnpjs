@@ -148,7 +148,7 @@ export class _Folder extends _SPInstance<IFolderInfo> {
      */
     public async moveByPath(destUrl: string, KeepBoth?: boolean): Promise<IFolder>;
     @cancelableScope
-    public async moveByPath(destUrl: string,  ...rest: [Partial<Omit<IMoveCopyOptions, "ResetAuthorAndCreatedOnCopy">>] | [boolean?]): Promise<IFolder> {
+    public async moveByPath(destUrl: string, ...rest: [Partial<Omit<IMoveCopyOptions, "ResetAuthorAndCreatedOnCopy">>] | [boolean?]): Promise<IFolder> {
 
         let options: Partial<IMoveCopyOptions> = {
             KeepBoth: false,
@@ -168,7 +168,7 @@ export class _Folder extends _SPInstance<IFolderInfo> {
 
         const uri = new URL(urlInfo.ParentWeb.Url);
 
-        await spPost(Folder([this, uri.origin], "/_api/SP.MoveCopyUtil.MoveFolderByPath()"),
+        await spPost(Folder([this, urlInfo.ParentWeb.Url], "/_api/SP.MoveCopyUtil.MoveFolderByPath()"),
             body({
                 destPath: toResourcePath(isUrlAbsolute(destUrl) ? destUrl : combine(uri.origin, destUrl)),
                 options,
@@ -216,7 +216,7 @@ export class _Folder extends _SPInstance<IFolderInfo> {
 
         const uri = new URL(urlInfo.ParentWeb.Url);
 
-        await spPost(Folder([this, uri.origin], "/_api/SP.MoveCopyUtil.CopyFolderByPath()"),
+        await spPost(Folder([this, urlInfo.ParentWeb.Url], "/_api/SP.MoveCopyUtil.CopyFolderByPath()"),
             body({
                 destPath: toResourcePath(isUrlAbsolute(destUrl) ? destUrl : combine(uri.origin, destUrl)),
                 options,
@@ -283,16 +283,6 @@ export class _Folder extends _SPInstance<IFolderInfo> {
                 Url: urlInfo.ListItemAllFields.ParentList.ParentWeb.Url,
             },
         };
-    }
-
-    /**
-     * Gets the shareable item associated with this folder
-     */
-    protected async getShareable(): Promise<IItem> {
-
-        // sharing only works on the item end point, not the file one
-        const d = await SPInstance(this, "listItemAllFields").select("odata.id")();
-        return Item([this, odataUrlFrom(d)]);
     }
 }
 export interface IFolder extends _Folder, IDeleteableWithETag { }

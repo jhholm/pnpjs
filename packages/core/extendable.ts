@@ -28,7 +28,7 @@ export function extendable() {
 
             construct(clz, args, newTarget: any) {
 
-                let r = Reflect.construct(clz, args, newTarget);
+                let r: object = Reflect.construct(clz, args, newTarget);
 
                 // this block handles the factory function extensions by picking
                 // them off the factory and applying them to the created object
@@ -79,7 +79,10 @@ export function extend<T extends object>(target: T, extensions: ExtensionType | 
     _enableExtensions = true;
 
     if (!Reflect.has(target, ObjExtensionsSym)) {
-        Reflect.set(target, ObjExtensionsSym, []);
+        Reflect.defineProperty(target, ObjExtensionsSym, {
+            writable: true,
+            value: [],
+        });
     }
 
     extendCol(<ExtensionType[]>Reflect.get(target, ObjExtensionsSym), extensions);

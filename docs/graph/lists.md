@@ -73,8 +73,15 @@ For more information about working please see documentation on [columns](./colum
 ```TypeScript
 import { graphfi } from "@pnp/graph";
 import "@pnp/graph/lists";
+import "@pnp/graph/columns";
 
 const graph = graphfi(...);
 
-await graph.sites.getById("{site identifier}").lists.getById("{list identifier}").columns();;
+await graph.sites.getById("{site identifier}").lists.getById("{list identifier}").columns();
 ```
+
+## Get List Items
+
+Currently, recieving list items via @pnpjs/graph API is not possible.
+
+This can currently be done with a call by path as documented under [@pnpjs/graph/items](./items.md)

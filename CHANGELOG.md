@@ -5,6 +5,158 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.13.0 - 2023-Mar-17
+
+### Added
+
+- sp
+  - Added getCurrentUserMemberships to new publishingSitePageService import.
+
+### Fixed
+
+- node
+  - Fixed typing issues with asCanceable wrapper and dropped references in stream.d.ts.
+  - Fixed setStreamContentChunked to fixed unhandled promise.
+
+## 3.12.1 - 2023-Feb-14
+
+### Fixed
+
+- sp
+  - Addresses #2570, #2571 - Removes adding a bearer token by default to SPFx requests
+
+## 3.12.0 - 2023-Feb-10
+
+**Please note:** We are official closing support for v2. Moving forward we will no longer do releases for the v2 version.
+
+### Added 
+
+- graph
+  - Addresses #2552 - Adds an SPFx Token behavior to sp and graph libraries
+
+- sp
+  - Addresses #2552 - Adds an SPFx Token behavior to sp and graph libraries
+  - Addresses #2551 - Add typings when fetching Site data and change typings for getDocumentLibraries
+
+### Fixed
+
+- core
+  - Fixes #2539 - Fix unhandlable promise in start()
+
+- sp
+  - Fixes #2561 - Changes behavior in processing for saving client side pages to process all controls through the specialSaveHandling function
+  - Fixes #2558 - Issue with getParentWeb from root site
+  - Fixes #2550 - Fix for request digest timeout after tab sleeps
+
+- sp-admin
+  - Fixes #2518 - Replacing 'CreateGroupForSite' method example by 'AddTenantCdnOrigin'
+
+## 3.11.0 - 2023-Jan-13
+
+### Added
+
+- graph
+  - Added various methods to OneDrive module; GraphFI.Drives,Drives - delta,Drives - upload,Drive - getItemByPath,Drive - getItemsByPath,DriveItem - moveItem,DriveItem - copyItem,DriveItem - convertContent,DriveItem - upload,DriveItem - preview,Root/DriveItem - analytics,List - IDrive.getList
+
+### Fixed
+
+- docs
+  - General typo fixes and updates
+
+- core
+  - Fixes #2507 - Updates the timeline start logic to get a ref to the promise rather than attaching finally directly.
+
+- sp
+  - Fixes #2509 - Fix but with item.setImageField
+
+- node
+  - Fixes #2532 - Fix setStreamContentChunked: await loading chunks
+
+### Removed
+
+- graph
+  - Deprecated OneDrive module; DriveItem - move - replaced by moveItem, DriveItem - setContent - replaced by upload
+
+## 3.10.0 - 2022-Dec-13
+
+### Added
+
+- queryable
+  - Added CacheNever behavior
+  - Adds bindCachingCore method to reuse the caching props calculation logic
+
+- sp
+  - Added ability to limit the getSharingInformation returned properties
+  - Adding support for add/update/delete for taxonomy entities
+
+- graph
+  - Added followed endpoint to Drives
+  - Adds options to Graph - OneDrive sharedWithMe method
+
+### Fixed
+
+- docs
+  - General typo fixes and updates
+
+- queryable
+  - Fix for CachingPessimistic behavior
+
+- sp
+  - Fixing #2448 appears to have reverted #2414, and now fixed again
+
+- graph
+  - Bug fix for DrvieItem.getContent when using Caching behavior
+  
+## 3.9.0 - 2022-Nov-11
+
+### Added
+
+- sp
+  - Support for multi-line batch responses
+
+- graph
+  - Add getting site by resource url instead of id
+
+### Fixed
+
+- docs
+  - General typo fixes and updates
+
+- sp
+  - Updates Search and Suggest to be true invokable factories
+  - Updates docs for search on using factory methods
+  - Updates logic in sp.search and sp.searchSuggest
+  - fix to await the completePromises in batches that have no requests due to caching supplying all the results.
+
+- graph
+  - This update includes a fix for an improperly formed search endpoint on the root drive.
+
+## 3.8.0 - 2022-Oct-14
+
+### Added
+
+- sp
+  - adds storage metrics for IFolder
+  - adds return of IFolder or IFile from copyByPath and moveByPath
+  - adds fileFromPath and fileFromAbsolutePath to get an IFile from arbitrary file paths
+  - adds folderFromPath and folderFromAbsolutePath to get an IFolder from arbitrary file paths
+  - adds ability to pass all options to IFolder's moveByPath and copyByPath to match IFile
+  - adds docs/tests for the new stuff
+  - adds a new sp module context-info allowing for easier retrieval of contextual information
+  - adds new CacheAlways behavior
+  - adds additional props to ISearchResult
+  - adds additional props to site scripts create/update
+
+### Fixed
+
+- docs
+  - General typo fixes
+  - Fixed service class example
+
+- graph
+  - Fixed bug with getAllChildrenAsOrderedTree, #2414
+  - Fixed issue with observables missing when adding drive item, #2435
+
 ## 3.7.0 - 2022-Sept-9
 
 ### Added

@@ -113,15 +113,10 @@ export const mochaHooks = {
                 this.pnp.settings.sp.testWebUrl = testWebResult.data.Url;
 
                 // create a new testing site
-                this.pnp._sp = spfi(this.pnp.settings.sp.testWebUrl).using(
-                    SPDefault({
-                        msal: {
-                            config: this.pnp.settings.sp.msal.init,
-                            scopes: this.pnp.settings.sp.msal.scopes,
-                        },
-                    }),
-                    NodeFetch({ replace: true }),
-                    PnPLogging(this.pnp.args.logging));
+                this.pnp._sp = spfi([rootSP.web, this.pnp.settings.sp.testWebUrl]);
+
+                // TODO:: remove once pnpTest is used everywhere
+                this.pnp.sp = this.pnp._sp;
 
             } finally {
                 const setupEnd = Date.now();
@@ -143,6 +138,9 @@ export const mochaHooks = {
                         scopes: this.pnp.settings.graph.msal.scopes,
                     },
                 }), NodeFetch({ replace: true }), PnPLogging(this.pnp.args.logging));
+
+                // TODO:: remove once pnpTest is used everywhere
+                this.pnp.graph = this.pnp._graph;
 
             } finally {
                 const setupEnd = Date.now();

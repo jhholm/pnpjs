@@ -26,26 +26,22 @@ const graph = graphfi(...);
 const siteInfo = await graph.sites.getById("{site identifier}")();
 ```
 
-## Make additional calls
+## Call graph.sites.getByUrl
 
-We don't currently implement all of the available options in graph for sites, rather focusing on the sp library. While we do accept PRs to add functionality, you can also make calls by path:
+Using the sites.getByUrl() you can get a site using url instead of identifier
 
-### Get list items
-
-```TypeScript
-import { Site } from "@pnp/graph/sites";
-
-const sites = graph.sites.getById("{site id}");
-
-const users = await Site(sites, "lists/{listid}/items")();
-```
-
-### Get File/Item version information
+![Known Issue Banner](https://img.shields.io/badge/Known%20Issue-important.svg) If you get a site with this method, the graph does not support chaining a request further than .drive. We will review and try and create a work around for this issue.
 
 ```TypeScript
-import { Site } from "@pnp/graph/sites";
+import { graphfi } from "@pnp/graph";
+import "@pnp/graph/sites";
 
-const sites = graph.sites.getById("{site id}");
-
-const users = await Site(sites, "lists/{listid}/items/{item id}/versions")();
+const graph = graphfi(...);
+const sharepointHostName = "contoso.sharepoint.com";
+const serverRelativeUrl = "/sites/teamsite1";
+const siteInfo = await graph.sites.getByUrl(sharepointHostName, serverRelativeUrl)();
 ```
+
+## Make additional calls or recieve items from lists
+
+We don't currently implement all of the available options in graph for sites, rather focusing on the sp library. While we do accept PRs to add functionality, you can [also make calls by path.](./items.md)

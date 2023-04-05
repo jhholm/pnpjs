@@ -139,7 +139,7 @@ import "@pnp/sp/folders";
 const sp = spfi(...);
 
 //Sample uses pure JavaScript to access the input tag of type="file" ->https://www.w3schools.com/tags/att_input_type_file.asp 
-let input = <HTMLInputElement>document.getElementById("thefileinput");
+let file = <HTMLInputElement>document.getElementById("thefileinput");
 const fileNamePath = encodeURI(file.name);
 let result: IFileAddResult;
 // you can adjust this number to control what size files are uploaded in chunks
@@ -393,6 +393,8 @@ console.log(perms);
 
 It's possible to move a file to a new destination within a site collection  
 
+> If you change the filename during the move operation this is considered an "edit" and the file's modified information will be updated regardless of the "RetainEditorAndModifiedOnMove" setting.
+
 ```TypeScript
 import { spfi } from "@pnp/sp";
 import "@pnp/sp/webs";
@@ -420,7 +422,7 @@ const sp = spfi(...);
 // destination is a server-relative url of a new file
 const destinationUrl = `/sites/dev2/SiteAssets/new-file.docx`;
 
-await sp.web.getFileByServerRelativePath("/sites/dev/Shared Documents/test.docx").moveByPath(destinationUrl, false, {
+await sp.web.getFileByServerRelativePath("/sites/dev/Shared Documents/new-file.docx").moveByPath(destinationUrl, false, {
     KeepBoth: false,
     RetainEditorAndModifiedOnMove: true,
     ShouldBypassSharedLocks: false,
@@ -446,7 +448,7 @@ await sp.web.getFileByServerRelativePath("/sites/dev/Shared Documents/test.docx"
 
 ### copy by path
 
-It's possible to copy a file to a new destination within the same or a different site collection  
+It's possible to copy a file to a new destination within the same or a different site collection.
 
 ```TypeScript
 import { spfi } from "@pnp/sp";

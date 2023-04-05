@@ -1,10 +1,13 @@
 import { isFunc, TimelinePipe, dateAdd, getHashCode, isUrlAbsolute } from "@pnp/core";
 import { Queryable } from "@pnp/queryable";
-import { statSync, readFileSync, existsSync, writeFileSync, mkdirSync } from "fs";
+import { statSync, readFileSync, existsSync, createWriteStream, mkdirSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
 import { Context, Suite } from "mocha";
 import { TestProps } from "./test-props.js";
 import { PnPTestHeaderName } from "./pnp-test.js";
+import { default as nodeFetch } from "node-fetch";
+
+// TODO:: a way to record tests from the browser -> console.log what we would save in a file along with the generated filename
 
 export interface IRecordingOptions {
     resolvedRecordingPath: string;
@@ -38,12 +41,16 @@ export function initRecording(ctx: Context | Suite, options?: Partial<IRecording
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function disposeRecording(ctx: Context | Suite): Promise<void> {
 
-    if (ctx.pnp.args.record && ctx.pnp.args.recordMode === "write") {
-        // save our updated test props
-        return (<TestProps>ctx.pnp.testProps).save();
-    }
+    // TODO:: we do nothing currently until recording is ready
+    return;
+
+    // if (ctx.pnp.args.record && ctx.pnp.args.recordMode === "write" && typeof (<any>ctx.pnp?.testProps)?.save === "function") {
+    //     // save our updated test props
+    //     return (<TestProps>ctx.pnp.testProps).save();
+    // }
 }
 
 const counters = new Map<string, number>();
@@ -73,9 +80,9 @@ function incrementCounter(key: string): number {
  * @param init request init (contains test id)
  * @returns unique file name to store request response
  */
-function getResponseFileName(url: string, init: RequestInit): string {
+function getResponseFileNames(url: string, init: RequestInit): [string, string] {
 
-    const testId = init.headers[PnPTestHeaderName];
+    const testId: string = init.headers[PnPTestHeaderName];
 
     let localUrl = url;
 
@@ -83,7 +90,9 @@ function getResponseFileName(url: string, init: RequestInit): string {
         localUrl = localUrl.substring(localUrl.indexOf("_api/"));
     }
 
-    return `${testId}_${getHashCode(localUrl)}_${incrementCounter(`${testId}:${localUrl}`)}.json`;
+    const counter = incrementCounter(testId);
+
+    return [`${testId}_${getHashCode(localUrl)}_${counter}_body.json`, `${testId}_${getHashCode(localUrl)}_${counter}_init.json`];
 }
 
 function RequestRecorderCache(resolvedRecordingPath: string, mode: "playback" | "record" = "playback", isExpired?: (Date) => boolean): TimelinePipe {
@@ -95,7 +104,8 @@ function RequestRecorderCache(resolvedRecordingPath: string, mode: "playback" | 
         isExpired = (d: Date) => dateAdd(d, "week", 2) < today;
     }
 
-    const recorderFilePath = Symbol.for("recorder_file_path");
+    const bodyFilePath = Symbol.for("body_file_path");
+    const initFilePath = Symbol.for("init_file_path");
 
     if (!existsSync(resolvedRecordingPath)) {
         mkdirSync(resolvedRecordingPath);
@@ -103,37 +113,57 @@ function RequestRecorderCache(resolvedRecordingPath: string, mode: "playback" | 
 
     return (instance: Queryable) => {
 
-        instance.on.pre(async function (this: Queryable, url: string, init: RequestInit, result: any): Promise<[string, RequestInit, any]> {
+        instance.on.send.replace(async function (this: Queryable, url, init): Promise<Response> {
 
-            this[recorderFilePath] = join(resolvedRecordingPath, getResponseFileName(url, init));
+            const fileNames = getResponseFileNames(url.toString(), init);
 
-            if (existsSync(this[recorderFilePath])) {
+            this[bodyFilePath] = join(resolvedRecordingPath, fileNames[0]);
+            this[initFilePath] = join(resolvedRecordingPath, fileNames[1]);
 
-                const stats = statSync(this[recorderFilePath]);
+            if (existsSync(this[initFilePath])) {
+
+                const stats = statSync(this[initFilePath]);
                 if (!isExpired(stats.mtime)) {
 
-                    result = JSON.parse(readFileSync(this[recorderFilePath]).toString());
-                    return [url, init, result];
+                    const { status, statusText, headers } = JSON.parse(readFileSync(this[initFilePath]).toString());
+                    const body = readFileSync(this[bodyFilePath], "utf-8").toString();
+
+                    return new Response(status === 204 ? null : body, { status, statusText, headers });
                 }
             }
 
+            const response: Response = await <any>nodeFetch(url.toString(), <any>init);
+
             if (mode === "record") {
 
-                this.on.post(async function (url: URL, result: any) {
+                const clonedResponse = response.clone();
+                const headers = {};
+                if (clonedResponse.headers) {
+                    clonedResponse.headers.forEach((value, key) => {
+                        headers[key] = value;
+                    });
+                }
 
-                    if (Reflect.has(this, recorderFilePath)) {
-                        writeFileSync(this[recorderFilePath], JSON.stringify(result));
-                    }
+                const responseToCache = {
+                    status: clonedResponse.status,
+                    statusText: clonedResponse.statusText,
+                    headers,
+                };
 
-                    return [url, result];
-                });
+                // write the init details
+                writeFileSync(this[initFilePath], JSON.stringify(responseToCache));
+
+                // write the body in parallel for efficiency
+                const fileStream = createWriteStream(this[bodyFilePath], "utf-8");
+                (<any>clonedResponse).body.pipe(fileStream);
             }
 
-            return [url, init, result];
+            return response;
         });
 
         instance.on.dispose(function () {
-            delete this[recorderFilePath];
+            delete this[bodyFilePath];
+            delete this[initFilePath];
         });
 
         return instance;
